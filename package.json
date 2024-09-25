@@ -1,0 +1,21 @@
+{
+  "name": "api_books",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "api_books": "file:",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-async-handler": "^1.2.0",
+    "joi": "^17.13.3",
+    "mongoose": "^8.6.3"
+  }
+}
