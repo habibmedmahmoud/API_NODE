@@ -1,12 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const logger = require('./middlewaes/logger');
-const booksPath = require('./routes/books');
-const authorsPath = require('./routes/author');
-const authPath = require('./routes/auth');
-const dotenv = require('dotenv');
-dotenv.config();
+const { notFound, errorHandler } = require('./middlewaes/errors');
+require('dotenv').config();
+const connectToDB = require('./config/db');
+
 
 
 // Initialiser l'application express
@@ -19,22 +17,24 @@ const PORT = process.env.PORT;
 app.use(bodyParser.json());
 app.use(logger);
 
-//Connexion à la base de données MongoDB
-mongoose.
-connect(process.env.MONGO_URL).
-then(() => console.log("Connected to Mongodb")).catch(((error) => console.log("connection failed to mongodb ", error)));
+// routes 
+app.use("/api/books", require('./routes/books'));
+app.use("/api/authors", require('./routes/author'));
+app.use("/api/auth", require('./routes/auth'));
+app.use("/api/users", require('./routes/user'));
 
+
+// Errur Hanbler middlwere 
+app.use(notFound);
+app.use(errorHandler);
 // // Vérifier la connexion à la base de données
 // const db = mongoose.connection;
+connectToDB();
 
 // db.on('error', (error) => console.error('Connection error:', error));
 // db.once('open', () => console.log('Connected to Database'));
 
 // app.use(bodyParser.json()); // Pour parser les requêtes JSON
-// routes 
-app.use("/api/books", booksPath);
-app.use("/api/authors", authorsPath);
-app.use("/api/auth", authPath);
 
 
 // error handler middlwaers
