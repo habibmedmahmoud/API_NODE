@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
-const Author = require('./author'); //
+const Author = require('./Author'); //
 
 // Définition du schéma pour le modèle Book
 const BookSchema = new mongoose.Schema({

@@ -1,28 +1,39 @@
 const express = require("express");
 const router = express.Router();
+const {
+    verifyToken ,
+    VerifyTokenAndAdmin , 
+    VerifyTokenAndOnlyUser,
+    VerifyTokenAndAuthorization
+} = require("../middlewaes/verifyToken");
 
-const { verifyTokeAndAuthorization, verifyTokeAndAdmin } = require('../middlewaes/verifyToken');
-const { updatUser, getAllUser, getUserById, deleteUser } = require("../controllers/userController");
+const {
+    
+    updateProfile,
+    uploadImage,
+    getAllUsers,
+    getUserById,
+    deleteUser,
+    getUserCount,
+    changePassword
+    
+} = require("../controllers/userController");
 
+const validateObjectId = require("../middlewaes/validateObjectId");
+const PhotoUpload = require("../middlewaes/photoupload");
 
-// Update User
+// api/users/profile
+router.route('/profile').get(VerifyTokenAndAdmin, getAllUsers);
+// api/users/profile/profile-photo-upload
+router.route('/profile/profile-photo-upload').post(verifyToken, PhotoUpload.single('image'), uploadImage);
 
-router.put('/:id', verifyTokeAndAuthorization, updatUser);
-
-
-
-//  GET  User only admin
-
-router.get('/', verifyTokeAndAdmin, getAllUser);
-
-
-
-// GET Pyid User only admin et user 
-
-router.get('/:id', verifyTokeAndAuthorization, getUserById);
-
-// detele de users 
-router.delete('/:id', verifyTokeAndAuthorization, deleteUser);
+router.route('/profile/:id')
+.get(validateObjectId,getUserById)
+.put( validateObjectId, VerifyTokenAndOnlyUser, PhotoUpload.single('profilePhoto'), updateProfile)
+.delete(validateObjectId, VerifyTokenAndAuthorization, deleteUser);
+// api/users/count
+router.route('/count').get(VerifyTokenAndAdmin,getUserCount);
+router.route('/change-password/:id').put(validateObjectId,verifyToken,changePassword);
 
 
 

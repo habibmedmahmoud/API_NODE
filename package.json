@@ -12,11 +12,14 @@
     "api_books": "file:",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "cloudinary": "^2.7.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-async-handler": "^1.2.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.3"
+    "mongoose": "^8.6.3",
+    "multer": "^2.0.2",
+    "streamifier": "^0.1.1"
   }
 }

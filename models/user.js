@@ -1,96 +1,87 @@
+// models/user.js
 const mongoose = require('mongoose');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
-const UserSchema = new mongoose.Schema({
-    email: {
 
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 5,
-        maxlength: 100,
-        unique: true
-    },
-    username: {
+const UserSchema = new mongoose.Schema({
+    name: {
         type: String,
         required: true,
         trim: true,
         minlength: 2,
         maxlength: 200,
-
     },
-    password: {
-
+    phone: {
         type: String,
         required: true,
         trim: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true,
         minlength: 6,
-
+    },
+    country: {
+        type: String,
+        enum: ['RU', 'MR'],
+        required: true
     },
     isAdmin: {
-
         type: Boolean,
         default: false
-
     },
+    profilePhoto: {
+        type: Object,
+        default: {
+            url: "",
+            publicId: null,
+        },
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+}, { timestamps: true });
 
+UserSchema.methods.generateToken = function () {
+     return jwt.sign({id : this._id , isAdmin: this.isAdmin },process.env.JWT_SECRET_KEY);
 
-}, {
-    timestamps: true // Ajoute les champs createdAt et updatedAt automatiquement}
+};
 
-});
-// Generate Token 
-UserSchema.methods.generateToken = function() {
-
-    return jwt.sign({
-        id: this._id,
-        isAdmin: this.isAdmin
-    }, process.env.JWT_SECRET_KEY);
-
-
-}
-
-const User = new mongoose.model("User", UserSchema);
-// validate Register User 
+const User = mongoose.model("User", UserSchema);
 
 function validateRegisterUser(obj) {
     const schema = Joi.object({
-        email: Joi.string().trim().min(5).max(100).required().email(),
-        username: Joi.string().trim().min(2).max(200).required(),
-        password: Joi.string().trim().min(6).required(),
-
+        name: Joi.string().trim().min(2).max(200).required(),
+        phone: Joi.string().required(),
+        password: Joi.string().min(6).required(),
+        country: Joi.string().valid('RU', 'MR').required(),
     });
-
     return schema.validate(obj);
 }
 
-// validate Login  User 
 function validateLoginUser(obj) {
     const schema = Joi.object({
-        email: Joi.string().trim().min(5).max(100).required().email(),
-        password: Joi.string().trim().min(6).required(),
-
+        phone: Joi.string().required(),
+        password: Joi.string().min(6).required()
     });
-
     return schema.validate(obj);
 }
 
-// validate Update User 
-function validateUpdateerUser(obj) {
+function validateUpdateUser(obj) {
     const schema = Joi.object({
-        email: Joi.string().trim().min(5).max(100).email(),
-        username: Joi.string().trim().min(2).max(200),
-        password: Joi.string().trim().min(6),
-
-
+        name: Joi.string().min(2).max(10),
+        phone: Joi.string().pattern(/^[0-9]+$/),
+        country: Joi.string().valid('RU', 'MR').required(),
+        
     });
-
-    return schema.validate(obj);
+    return schema.validate(obj, { abortEarly: false });
 }
 
 module.exports = {
     User,
-    validateLoginUser,
     validateRegisterUser,
-    validateUpdateerUser
-}
+    validateLoginUser,
+    validateUpdateUser
+};

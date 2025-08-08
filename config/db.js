@@ -16,14 +16,3 @@ async function connectToDB() {
 
 
 module.exports = connectToDB;
-
-
-
-
-
-// function connectToDB() {
-//     //Connexion à la base de données MongoDB
-//     mongoose.
-//     connect(process.env.MONGO_URL).
-//     then(() => console.log("Connected to Mongodb")).catch(((error) => console.log("connection failed to mongodb ", error)));
-// }

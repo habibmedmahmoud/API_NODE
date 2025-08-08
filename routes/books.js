@@ -1,25 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const {
-    verifyTokeAndAdmin
-} = require('../middlewaes/verifyToken');
+const { VerifyTokenAndAdmin } = require('../middlewaes/verifyToken'); // Fixed typo
 const {
     getALLBooks,
     getBookById,
-    CreateBoook,
+    createBook,  // Changed to lowercase for consistency
     updateBook,
     deleteBook
 } = require('../controllers/BookController');
 
-// api/books
 router.route('/')
     .get(getALLBooks)
-    .post(verifyTokeAndAdmin, CreateBoook);
+    .post(VerifyTokenAndAdmin, createBook); // Fixed middleware name and case
 
-
-
-// api/books/:
-router.route('/:id').get(getBookById).put(verifyTokeAndAdmin, updateBook).delete(verifyTokeAndAdmin, deleteBook);
-
+router.route('/:id')
+    .get(getBookById)
+    .put(VerifyTokenAndAdmin, updateBook)
+    .delete(VerifyTokenAndAdmin, deleteBook);
 
 module.exports = router;

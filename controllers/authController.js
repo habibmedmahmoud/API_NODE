@@ -1,65 +1,71 @@
-const { User, validateLoginUser, validateRegisterUser, validateUpdateerUser } = require('../models/user');
+const { User, validateLoginUser, validateRegisterUser } = require('../models/user');
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const register = asyncHandler((async(req, res) => {
+exports.register = asyncHandler(async (req, res) => {
+    const { error } = validateRegisterUser(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const {
-        error
-    } = validateRegisterUser(req.body);
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-    }
+    const { name , phone, password, country } = req.body;
 
-    let user = await User.findOne({ email: req.body.email });
-    if (user) {
-        return res.status(400).json({ message: "this user already  resisterd " });
-    }
+    const existingUser = await User.findOne({ phone });
+    if (existingUser) return res.status(400).json({ message: "Phone already registered" });
+
     const salt = await bcrypt.genSalt(10);
-    req.body.password = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    user = new User({
-        email: req.body.email,
-        username: req.body.username,
-        password: req.body.password,
-
+    const user = new User({
+        name,
+        phone,
+        password: hashedPassword,
+        country,
     });
-    const result = await user.save();
-    const token = user.generateToken();
-    const { password, ...other } = result._doc;
-    res.status(201).json({...other, token });
-}));
 
-
-const login = asyncHandler((async(req, res) => {
-
-    const {
-        error
-    } = validateLoginUser(req.body);
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-    }
-
-    let user = await User.findOne({ email: req.body.email });
-    if (!user) {
-        return res.status(400).json({ message: "invalid email or password" });
-    }
-
-
-    const isPasswordMatch = await bcrypt.compare(req.body.password, user.password);
-
-    if (!isPasswordMatch) {
-        return res.status(400).json({ message: "invalid email or password" });
-    }
-
-
+    await user.save();
     const token = user.generateToken();
 
-    const { password, ...other } = user._doc;
-    res.status(200).json({...other, token });
-}));
-module.exports = {
-    register,
-    login
+    res.status(201).json({
+        status: "success",
+        message: "User registered successfully",
+        token,
+        user: {
+            id: user._id,
+            name: user.name,
+            phone: user.phone,
+            country: user.country,
+            isAdmin:user.isAdmin
+        }
+    });
+});
 
-}
+
+
+
+exports.login = asyncHandler(async (req, res) => {
+    const { error } = validateLoginUser(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
+    const { phone, password } = req.body;
+
+    const user = await User.findOne({ phone });
+    if (!user) return res.status(400).json({ message: "Invalid phone or password" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid phone or password" });
+
+    const token = user.generateToken();
+
+    res.json({
+        token,
+        user: {
+            id: user._id,
+            name: user.name,
+            phone: user.phone,
+            country: user.country,
+            isAdmin:user.isAdmin
+            
+        }
+    });
+});
+

@@ -31,10 +31,9 @@ const AuthorSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Notez ici que 'mongoose.model' n'a pas besoin du mot-clé 'new'
-const Author = mongoose.model("Author", AuthorSchema);
+// ✅ Correction ici :
+const Author = mongoose.models.Author || mongoose.model("Author", AuthorSchema);
 
-// Fonction de validation pour la mise à jour d'un author 
 function validateUpdateAuthor(obj) {
     const schema = Joi.object({
         firstName: Joi.string().trim().min(3).max(200),

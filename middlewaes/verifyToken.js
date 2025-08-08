@@ -1,51 +1,72 @@
- const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
- function verifyToken(req, res, next) {
+ // verify token 
+function verifyToken(req,res,next) {
+    const autToken = req.headers.authorization;
+    if(autToken){
 
-     const token = req.headers.token;
+        const token = autToken.split(" ")[1];
+        try {
+            const decodedPayload = jwt.verify(token, process.env.JWT_SECRET_KEY); // ✅ FIXED
+            req.user = decodedPayload;
+            next();
+            
+        } catch (error) {
+            return res.status(401).json({message : " invalide token , acces denied"});
+        }
+    }
+    else{
+        return res.status(401).json({message : " no token provided , acces denied"});
+    }
+}
 
-     if (token) {
-         try {
-             const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-             req.user = decoded;
-             next();
-         } catch (error) {
+ // Verify token And Admin 
+ function VerifyTokenAndAdmin(req,res,next){
+    verifyToken(req,res,()=>{
+        if(req.user.isAdmin){
+            next();
 
-             res.status(401).json({ message: "invalid token " });
-         }
-
-     } else {
-
-         res.status(401).json({ message: " no token provided" });
-     }
-
-
+        }
+        else {
+            return res.status(403).json({message :"not allowed only admin"});
+        }
+    })
  }
 
- function verifyTokeAndAuthorization(req, res, next) {
-     verifyToken(req, res, () => {
-         if (req.user.id === req.params.id || req.user.isAdmin) {
-             next();
-         } else {
-             res.status(403).json({ message: "you are not allowed" });
-         }
-     })
- }
- // verify token and admin 
- function verifyTokeAndAdmin(req, res, next) {
-     verifyToken(req, res, () => {
-         if (req.user.isAdmin) {
-             next();
-         } else {
-             res.status(403).json({ message: "you are not allowed , only admin allowed " });
-         }
-     })
+ // Verify token And only user Himself  
+ function VerifyTokenAndOnlyUser(req,res,next){
+    
+    verifyToken(req,res,() => {
+        if(req.user.id === req.params.id){
+            
+            next();
+
+        }
+        else {
+            return res.status(403).json({message :" not allowed only user himself "});
+        }
+    })
  }
 
+ // Verify token & Authorization 
+ function VerifyTokenAndAuthorization(req,res,next){
 
+    verifyToken(req,res,() => {
+        if(req.user.id === req.params.id || req.user.isAdmin){
+            
+            next();
+
+        }
+        else {
+            return res.status(403).json({message :" not allowed only user himself or admin "});
+        }
+    })
+ }
 
  module.exports = {
-     verifyToken,
-     verifyTokeAndAuthorization,
-     verifyTokeAndAdmin
+    verifyToken ,
+    VerifyTokenAndAdmin, 
+    VerifyTokenAndOnlyUser,
+    VerifyTokenAndAuthorization
+
  }
